@@ -95,100 +95,100 @@ uint8_t LSM6DSV::WhoAmI() {
 }
 
 bool LSM6DSV::WriteI3cEnabled(EnableState enable_state) {
-  uint8_t ctrl9_xl;
-  ReadRegister(Register::CTRL9_XL, &ctrl9_xl);
+  uint8_t if_cfg;
+  ReadRegister(Register::IF_CFG, &if_cfg);
 
   if (enable_state == EnableState::kEnabled) {
-    ctrl9_xl |= 0b00000001;  // Set the I3C_EN bit
+    if_cfg |= 0b00000001;  // Set the I3C_EN bit
   } else {
-    ctrl9_xl &= ~0b00000001;  // Clear the I3C_EN bit
+    if_cfg &= ~0b00000001;  // Clear the I3C_EN bit
   }
 
-  return WriteRegister(Register::CTRL9_XL, &ctrl9_xl);
+  return WriteRegister(Register::IF_CFG, &if_cfg);
 }
 
 bool LSM6DSV::WriteAutoIncrementEnabled(EnableState enable_state) {
-  uint8_t ctrl3_c;
-  ReadRegister(Register::CTRL3_C, &ctrl3_c);
+  uint8_t ctrl3;
+  ReadRegister(Register::CTRL3, &ctrl3);
 
   if (enable_state == EnableState::kEnabled) {
-    ctrl3_c |= 0b00000100;  // Set the IF_INC bit
+    ctrl3 |= 0b00000100;  // Set the IF_INC bit
   } else {
-    ctrl3_c &= ~0b00000100;  // Clear the IF_INC bit
+    ctrl3 &= ~0b00000100;  // Clear the IF_INC bit
   }
 
-  return WriteRegister(Register::CTRL3_C, &ctrl3_c);
+  return WriteRegister(Register::CTRL3, &ctrl3);
 }
 
 bool LSM6DSV::EnableBlockDataUpdate(EnableState enable_state) {
-  uint8_t ctrl3_c;
-  ReadRegister(Register::CTRL3_C, &ctrl3_c);
+  uint8_t ctrl3;
+  ReadRegister(Register::CTRL3, &ctrl3);
 
   if (enable_state == EnableState::kEnabled) {
-    ctrl3_c |= 0b01000000;  // Set the BDU bit
+    ctrl3 |= 0b01000000;  // Set the BDU bit
   } else {
-    ctrl3_c &= ~0b01000000;  // Clear the BDU bit
+    ctrl3 &= ~0b01000000;  // Clear the BDU bit
   }
 
-  return WriteRegister(Register::CTRL3_C, &ctrl3_c);
+  return WriteRegister(Register::CTRL3, &ctrl3);
 }
 
 bool LSM6DSV::WriteTimestamp(EnableState enable_state) {
-  uint8_t ctrl10_c;
-  ReadRegister(Register::CTRL10_C, &ctrl10_c);
+  uint8_t functions_enable;
+  ReadRegister(Register::FUNCTIONS_ENABLE, &functions_enable);
 
   if (enable_state == EnableState::kEnabled) {
-    ctrl10_c |= 0b00000010;  // Set the TIMESTAMP_EN bit
+    functions_enable |= 0b01000000;  // Set the TIMESTAMP_EN bit
   } else {
-    ctrl10_c &= ~0b00000010;  // Clear the TIMESTAMP_EN bit
+    functions_enable &= ~0b01000000;  // Clear the TIMESTAMP_EN bit
   }
 
-  return WriteRegister(Register::CTRL10_C, &ctrl10_c);
+  return WriteRegister(Register::FUNCTIONS_ENABLE, &functions_enable);
 }
 
 bool LSM6DSV::EnableTimestampRounding(EnableState enable_state) {
-  uint8_t ctrl10_c;
-  ReadRegister(Register::CTRL10_C, &ctrl10_c);
+  uint8_t ctrl10;
+  ReadRegister(Register::CTRL10, &ctrl10);
 
   if (enable_state == EnableState::kEnabled) {
-    ctrl10_c |= 0b00000100;  // Set the ROUNDING_STATUS bit
+    ctrl10 |= 0b00000100;  // Set the ROUNDING_STATUS bit
   } else {
-    ctrl10_c &= ~0b00000100;  // Clear the ROUNDING_STATUS bit
+    ctrl10 &= ~0b00000100;  // Clear the ROUNDING_STATUS bit
   }
 
-  return WriteRegister(Register::CTRL10_C, &ctrl10_c);
+  return WriteRegister(Register::CTRL10, &ctrl10);
 }
 
 bool LSM6DSV::WriteGyroDataRate(LSM6DSV::GyroDataRate data_rate) {
-  uint8_t ctrl2_g;
-  ReadRegister(Register::CTRL2_G, &ctrl2_g);
+  uint8_t ctrl2;
+  ReadRegister(Register::CTRL2, &ctrl2);
 
   // Clear the data rate bits
-  ctrl2_g &= ~0b11110000;
+  ctrl2 &= ~0b00001111;
 
   // Set the new data rate
-  ctrl2_g |= (static_cast<uint8_t>(data_rate) & 0b1111) << 4;
+  ctrl2 |= static_cast<uint8_t>(data_rate) & 0b1111;
 
-  return WriteRegister(Register::CTRL2_G, &ctrl2_g);
+  return WriteRegister(Register::CTRL2, &ctrl2);
 }
 
 bool LSM6DSV::WriteGyroFullScale(LSM6DSV::GyroFullScale full_scale) {
-  uint8_t ctrl2_g;
-  ReadRegister(Register::CTRL2_G, &ctrl2_g);
+  uint8_t ctrl6;
+  ReadRegister(Register::CTRL6, &ctrl6);
 
   // Clear the full scale bits
-  ctrl2_g &= ~0b00001111;
+  ctrl6 &= ~0b00001111;
 
   // Set the new full scale
-  ctrl2_g |= static_cast<uint8_t>(full_scale) & 0b1111;
+  ctrl6 |= static_cast<uint8_t>(full_scale) & 0b1111;
 
-  return WriteRegister(Register::CTRL2_G, &ctrl2_g);
+  return WriteRegister(Register::CTRL6, &ctrl6);
 }
 
 LSM6DSV::GyroFullScale LSM6DSV::ReadGyroFullScale() {
-  uint8_t ctrl2_g;
-  ReadRegister(Register::CTRL2_G, &ctrl2_g);
-  return static_cast<GyroFullScale>(ctrl2_g & 0b00001111);
+  uint8_t ctrl6;
+  ReadRegister(Register::CTRL6, &ctrl6);
+  return static_cast<GyroFullScale>(ctrl6 & 0b00001111);
 }
 
 void LSM6DSV::ConfigureGyroSensitivity(GyroFullScale full_scale) {
@@ -217,36 +217,49 @@ void LSM6DSV::ConfigureGyroSensitivity(GyroFullScale full_scale) {
   }
 }
 
+bool LSM6DSV::WriteGyroOpMode(GyroOpMode op_mode) {
+  uint8_t ctrl2;
+  ReadRegister(Register::CTRL2, &ctrl2);
+
+  // Clear the operation mode bits
+  ctrl2 &= ~0b01110000;
+
+  // Set the new operation mode
+  ctrl2 |= (static_cast<uint8_t>(op_mode) & 0b111) << 4;
+
+  return WriteRegister(Register::CTRL2, &ctrl2);
+}
+
 bool LSM6DSV::WriteAccDataRate(AccelDataRate data_rate) {
-  uint8_t ctrl1_xl;
-  ReadRegister(Register::CTRL1_XL, &ctrl1_xl);
+  uint8_t ctrl1;
+  ReadRegister(Register::CTRL1, &ctrl1);
 
   // Clear the data rate bits
-  ctrl1_xl &= ~0b11110000;
+  ctrl1 &= ~0b00001111;
 
   // Set the new data rate
-  ctrl1_xl |= (static_cast<uint8_t>(data_rate) & 0b1111) << 4;
+  ctrl1 |= static_cast<uint8_t>(data_rate) & 0b1111;
 
-  return WriteRegister(Register::CTRL1_XL, &ctrl1_xl);
+  return WriteRegister(Register::CTRL1, &ctrl1);
 }
 
 bool LSM6DSV::WriteAccFullScale(LSM6DSV::AccelFullScale full_scale) {
-  uint8_t ctrl1_xl;
-  ReadRegister(Register::CTRL1_XL, &ctrl1_xl);
+  uint8_t ctrl8;
+  ReadRegister(Register::CTRL8, &ctrl8);
 
   // Clear the full scale bits
-  ctrl1_xl &= ~0b00001100;
+  ctrl8 &= ~0b00000011;
 
   // Set the new full scale
-  ctrl1_xl |= (static_cast<uint8_t>(full_scale) & 0b11) << 2;
+  ctrl8 |= static_cast<uint8_t>(full_scale) & 0b11;
 
-  return WriteRegister(Register::CTRL1_XL, &ctrl1_xl);
+  return WriteRegister(Register::CTRL8, &ctrl8);
 }
 
 LSM6DSV::AccelFullScale LSM6DSV::ReadAccFullScale() {
-  uint8_t ctrl1_xl;
-  ReadRegister(Register::CTRL1_XL, &ctrl1_xl);
-  return static_cast<AccelFullScale>((ctrl1_xl & 0b00001100) >> 2);
+  uint8_t ctrl8;
+  ReadRegister(Register::CTRL8, &ctrl8);
+  return static_cast<AccelFullScale>(ctrl8 & 0b00000011);
 }
 
 void LSM6DSV::ConfigureAccSensitivity(AccelFullScale full_scale) {
@@ -267,6 +280,19 @@ void LSM6DSV::ConfigureAccSensitivity(AccelFullScale full_scale) {
       acc_sensitivity_ = 0.0f;  // Invalid full scale
       break;
   }
+}
+
+bool LSM6DSV::WriteAccOpMode(AccelOpMode op_mode) {
+  uint8_t ctrl1;
+  ReadRegister(Register::CTRL1, &ctrl1);
+
+  // Clear the operation mode bits
+  ctrl1 &= ~0b01110000;
+
+  // Set the new operation mode
+  ctrl1 |= (static_cast<uint8_t>(op_mode) & 0b111) << 4;
+
+  return WriteRegister(Register::CTRL1, &ctrl1);
 }
 
 void LSM6DSV::CreateReadAccAndGyroTx(uint8_t tx_buf*) {
@@ -301,25 +327,25 @@ bool LSM6DSV::ReadAccAndGyro(float& gyro_x, float& gyro_y, float& gyro_z,
 }
 
 bool LSM6DSV::ResetMemory() {
-  uint8_t ctrl3_c;
-  ReadRegister(Register::CTRL3_C, &ctrl3_c);
+  uint8_t ctrl3;
+  ReadRegister(Register::CTRL3, &ctrl3);
 
   // Set the BOOT bit
-  ctrl3_c |= 0b1000000;
+  ctrl3 |= 0b1000000;
 
-  // Write back to the CTRL3_C register
-  return WriteRegister(Register::CTRL3_C, &ctrl3_c);
+  // Write back to the CTRL3 register
+  return WriteRegister(Register::CTRL3, &ctrl3);
 }
 
 bool LSM6DSV::RebootDevice() {
-  uint8_t ctrl3_c;
-  ReadRegister(Register::CTRL3_C, &ctrl3_c);
+  uint8_t ctrl3;
+  ReadRegister(Register::CTRL3, &ctrl3);
 
   // Set the SW_RESET bit
-  ctrl3_c |= 0b00000001;
+  ctrl3 |= 0b00000001;
 
-  // Write back to the CTRL3_C register
-  return WriteRegister(Register::CTRL3_C, &ctrl3_c);
+  // Write back to the CTRL3 register
+  return WriteRegister(Register::CTRL3, &ctrl3);
 }
 
 bool LSM6DSV::WriteInt1Enable(uint8_t int_enable_mask) {
@@ -337,26 +363,26 @@ bool LSM6DSV::WriteInt2Enable(uint8_t int_enable_mask) {
 }
 
 // bool LSM6DSV::WriteSflpEnabled(EnableState enable_state) {
-//   uint8_t ctrl10_c;
-//   ReadRegister(Register::CTRL10_C, &ctrl10_c);
+//   uint8_t ctrl10;
+//   ReadRegister(Register::CTRL10, &ctrl10);
 
 //   if (enable_state == EnableState::kEnabled) {
-//     ctrl10_c |= 0b00001000;  // Set SLP_EN bit
+//     ctrl10 |= 0b00001000;  // Set SLP_EN bit
 //   } else {
-//     ctrl10_c &= ~0b00001000;  // Clear SLP_EN bit
+//     ctrl10 &= ~0b00001000;  // Clear SLP_EN bit
 //   }
 
-//   return WriteRegister(Register::CTRL10_C, &ctrl10_c);
+//   return WriteRegister(Register::CTRL10, &ctrl10);
 // }
 
 // bool LSM6DSV::WriteSflpOutput(SflpOutput output) {
-//   uint8_t ctrl10_c;
-//   ReadRegister(Register::SFLP_ODR, &ctrl10_c);
+//   uint8_t ctrl10;
+//   ReadRegister(Register::SFLP_ODR, &ctrl10);
 
-//   ctrl10_c &= ~0b00110000;  // Clear SLP_OUT_SEL bits
-//   ctrl10_c |= (static_cast<uint8_t>(output) & 0b11) << 4;
+//   ctrl10 &= ~0b00110000;  // Clear SLP_OUT_SEL bits
+//   ctrl10 |= (static_cast<uint8_t>(output) & 0b11) << 4;
 
-//   return WriteRegister(Register::SFLP_ODR, &ctrl10_c);
+//   return WriteRegister(Register::SFLP_ODR, &ctrl10);
 // }
 
 // bool LSM6DSV::WriteSflpDataRate(SflpDataRate rate) {

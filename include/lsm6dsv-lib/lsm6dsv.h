@@ -112,16 +112,17 @@ class LSM6DSV {
 
   enum class GyroDataRate : uint8_t {
     kPowerDown = 0b0000,
-    k12_5Hz = 0b0001,
-    k26Hz = 0b0010,
-    k52Hz = 0b0011,
-    k104Hz = 0b0100,
-    k208Hz = 0b0101,
-    k416Hz = 0b0110,
-    k833Hz = 0b0111,
-    k1660Hz = 0b1000,
-    k3330Hz = 0b1001,
-    k6660Hz = 0b1010,
+    k7_5Hz = 0b0010,
+    k15Hz = 0b0011,
+    k30Hz = 0b0100,
+    k60Hz = 0b0101,
+    k120Hz = 0b0110,
+    k240Hz = 0b0111,
+    k480Hz = 0b1000,
+    k960Hz = 0b1001,
+    k1920Hz = 0b1010,
+    k3840Hz = 0b1011,
+    k7680Hz = 0b1100,
   };
 
   /**
@@ -133,12 +134,12 @@ class LSM6DSV {
   bool WriteGyroDataRate(GyroDataRate data_rate);
 
   enum class GyroFullScale : uint8_t {
-    k125dps = 0b0010,
-    k250dps = 0b0000,
-    k500dps = 0b0100,
-    k1000dps = 0b1000,
-    k2000dps = 0b1100,
-    k4000dps = 0b0001,
+    k125dps = 0b0000,
+    k250dps = 0b0001,
+    k500dps = 0b0010,
+    k1000dps = 0b0011,
+    k2000dps = 0b0100,
+    k4000dps = 0b1100,
   };
 
   /**
@@ -163,19 +164,31 @@ class LSM6DSV {
    */
   void ConfigureGyroSensitivity(GyroFullScale full_scale);
 
+
+  enum class GyroOpMode : uint8_t {
+    kHighPerformance = 0b000,
+    kHighAccuacyOdr = 0b001,
+    kOdrTriggered = 0b011,
+    kSleep = 0b100,
+    kLowPower = 0b101,
+  };
+
+  bool WriteGyroOpMode(GyroOpMode);
+
   enum class AccelDataRate : uint8_t {
     kPowerDown = 0b0000,
-    k1_6Hz = 0b1011,
-    k12_5Hz = 0b0001,
-    k26Hz = 0b0010,
-    k52Hz = 0b0011,
-    k104Hz = 0b0100,
-    k208Hz = 0b0101,
-    k416Hz = 0b0110,
-    k833Hz = 0b0111,
-    k1660Hz = 0b1000,
-    k3330Hz = 0b1001,
-    k6660Hz = 0b1010,
+    k1_875Hz = 0b0001,
+    k7_5Hz = 0b0010,
+    k15Hz = 0b0011,
+    k30Hz = 0b0100,
+    k60Hz = 0b0101,
+    k120Hz = 0b0110,
+    k240Hz = 0b0111,
+    k480Hz = 0b1000,
+    k960Hz = 0b1001,
+    k1920Hz = 0b1010,
+    k3840Hz = 0b1011,
+    k7680Hz = 0b1100,
   };
 
   /**
@@ -188,9 +201,9 @@ class LSM6DSV {
 
   enum class AccelFullScale : uint8_t {
     k2g = 0b00,
-    k4g = 0b10,
-    k8g = 0b11,
-    k16g = 0b01,
+    k4g = 0b01,
+    k8g = 0b10,
+    k16g = 0b11,
   };
 
   /**
@@ -216,6 +229,18 @@ class LSM6DSV {
    * @param full_scale The full scale setting to configure sensitivity.
    */
   void ConfigureAccSensitivity(AccelFullScale full_scale);
+
+  enum class AccelOpMode : uint8_t {
+    kHighPerformance = 0b000,
+    kHighAccuracy = 0b001,
+    kOdrTriggered = 0b011,
+    kLowPower2Mean = 0b100,
+    kLowPower4Mean = 0b101,
+    kLowPower8Mean = 0b110,
+    kNormal = 0b111,
+  };
+
+  bool WriteAccOpMode(AccelOpMode op_mode);
 
   void CreateReadAccAndGyroTx(uint8_t tx_buf*);
 
