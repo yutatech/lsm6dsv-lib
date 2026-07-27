@@ -282,36 +282,36 @@ class LSM6DSV {
   bool ReadInt2Enable(uint8_t& value);
 
   // SFLP (Sensor Fusion Low Power) enable
-  bool WriteSflpEnable(EnableState enable_state);
+  // bool WriteSflpEnable(EnableState enable_state);
 
   // SFLP output selection
-  enum class SflpOutputSel : uint8_t {
-    kGyro = 0,
-    kAccel = 1,
-    kQuaternion = 2,
-    kGravity = 3,
-  };
-  bool WriteSflpOutputSel(SflpOutputSel sel);
+  // enum class SflpOutputSel : uint8_t {
+  //   kGyro = 0,
+  //   kAccel = 1,
+  //   kQuaternion = 2,
+  //   kGravity = 3,
+  // };
+  // bool WriteSflpOutputSel(SflpOutputSel sel);
 
   // SFLP data rate
-  enum class SflpDataRate : uint8_t {
-    k15Hz = 0b000,
-    k30Hz = 0b001,
-    k60Hz = 0b010,
-    k120Hz = 0b011,
-    k240Hz = 0b100,
-    k480Hz = 0b101,
-  };
-  bool WriteSflpDataRate(SflpDataRate data_rate);
+  // enum class SflpDataRate : uint8_t {
+  //   k15Hz = 0b000,
+  //   k30Hz = 0b001,
+  //   k60Hz = 0b010,
+  //   k120Hz = 0b011,
+  //   k240Hz = 0b100,
+  //   k480Hz = 0b101,
+  // };
+  // bool WriteSflpDataRate(SflpDataRate data_rate);
 
   // Read Quaternion data
-  bool ReadQuaternion(float& w, float& x, float& y, float& z);
+  // bool ReadQuaternion(float& w, float& x, float& y, float& z);
 
   // Read Gravity vector data
-  bool ReadGravity(float& x, float& y, float& z);
+  // bool ReadGravity(float& x, float& y, float& z);
 
   // Read Gyro Bias data
-  bool ReadGyroBias(float& x, float& y, float& z);
+  // bool ReadGyroBias(float& x, float& y, float& z);
 
   // Helper APIs to enable BDU, timestamp, rounding, and FIFO
   bool EnableBlockDataUpdate(EnableState enable_state);
