@@ -217,6 +217,12 @@ class LSM6DSV {
    */
   void ConfigureAccSensitivity(AccelFullScale full_scale);
 
+  void CreateReadAccAndGyroTx(uint8_t tx_buf*);
+
+  bool DecodeReadAccAndGyroRx(uint8_t* rx_buf, float& gyro_x, float& gyro_y,
+                            float& gyro_z, float& acc_x, float& acc_y,
+                            float& acc_z);
+
   /**
    * @brief Read accelerometer and gyroscope data.
    *

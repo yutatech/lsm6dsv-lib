@@ -269,19 +269,33 @@ void LSM6DSV::ConfigureAccSensitivity(AccelFullScale full_scale) {
   }
 }
 
+void LSM6DSV::CreateReadAccAndGyroTx(uint8_t tx_buf*) {
+  tx_buf[0] = static_cast<uint8_t>(Register::OUTX_L_G) | 0b10000000;
+}
+
+bool LSM6DSV::DecodeReadAccAndGyroRx(uint8_t* rx_buf, float& gyro_x,
+                                     float& gyro_y, float& gyro_z, float& acc_x,
+                                     float& acc_y, float& acc_z) {
+  gyro_x =
+      static_cast<int16_t>((rx_buf[1] << 8) | rx_buf[0]) * gyro_sensitivity_;
+  gyro_y =
+      static_cast<int16_t>((rx_buf[3] << 8) | rx_buf[2]) * gyro_sensitivity_;
+  gyro_z =
+      static_cast<int16_t>((rx_buf[5] << 8) | rx_buf[4]) * gyro_sensitivity_;
+
+  acc_x = static_cast<int16_t>((rx_buf[7] << 8) | rx_buf[6]) * acc_sensitivity_;
+  acc_y = static_cast<int16_t>((rx_buf[9] << 8) | rx_buf[8]) * acc_sensitivity_;
+  acc_z =
+      static_cast<int16_t>((rx_buf[11] << 8) | rx_buf[10]) * acc_sensitivity_;
+}
+
 bool LSM6DSV::ReadAccAndGyro(float& gyro_x, float& gyro_y, float& gyro_z,
                              float& acc_x, float& acc_y, float& acc_z) {
   uint8_t data[12];
   bool status = ReadRegisters(Register::OUTX_L_G, data, 12);
   if (!status) { return status; }
   // Combine the low and high bytes for gyro and accelerometer data
-  gyro_x = static_cast<int16_t>((data[1] << 8) | data[0]) * gyro_sensitivity_;
-  gyro_y = static_cast<int16_t>((data[3] << 8) | data[2]) * gyro_sensitivity_;
-  gyro_z = static_cast<int16_t>((data[5] << 8) | data[4]) * gyro_sensitivity_;
-
-  acc_x = static_cast<int16_t>((data[7] << 8) | data[6]) * acc_sensitivity_;
-  acc_y = static_cast<int16_t>((data[9] << 8) | data[8]) * acc_sensitivity_;
-  acc_z = static_cast<int16_t>((data[11] << 8) | data[10]) * acc_sensitivity_;
+  DecodeReadAccAndGyroRx(data, gyro_x, gyro_y, gyro_z, acc_x, acc_y, acc_z);
 
   return true;
 }
