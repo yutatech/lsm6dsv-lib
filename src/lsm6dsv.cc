@@ -8,9 +8,6 @@ bool LSM6DSV::Init() {
   bool is_success = true;
   is_success &= WriteI3cEnabled(LSM6DSV::EnableState::kDisabled);
   is_success &= WriteAutoIncrementEnabled(LSM6DSV::EnableState::kEnabled);
-  is_success &= EnableBlockDataUpdate(LSM6DSV::EnableState::kEnabled);
-  is_success &= WriteTimestamp(LSM6DSV::EnableState::kEnabled);
-  is_success &= EnableTimestampRounding(LSM6DSV::EnableState::kEnabled);
   return is_success;
 }
 
@@ -99,9 +96,9 @@ bool LSM6DSV::WriteI3cEnabled(EnableState enable_state) {
   ReadRegister(Register::IF_CFG, &if_cfg);
 
   if (enable_state == EnableState::kEnabled) {
-    if_cfg |= 0b00000001;  // Set the I3C_EN bit
-  } else {
     if_cfg &= ~0b00000001;  // Clear the I3C_EN bit
+  } else {
+    if_cfg |= 0b00000001;  // Set the I3C_EN bit
   }
 
   return WriteRegister(Register::IF_CFG, &if_cfg);
@@ -295,9 +292,10 @@ bool LSM6DSV::WriteAccOpMode(AccelOpMode op_mode) {
   return WriteRegister(Register::CTRL1, &ctrl1);
 }
 
-void LSM6DSV::CreateReadAccAndGyroTx(uint8_t tx_buf*) {
+void LSM6DSV::CreateReadAccAndGyroTx(uint8_t* tx_buf) {
   tx_buf[0] = static_cast<uint8_t>(Register::OUTX_L_G) | 0b10000000;
 }
+
 
 bool LSM6DSV::DecodeReadAccAndGyroRx(uint8_t* rx_buf, float& gyro_x,
                                      float& gyro_y, float& gyro_z, float& acc_x,
@@ -310,18 +308,25 @@ bool LSM6DSV::DecodeReadAccAndGyroRx(uint8_t* rx_buf, float& gyro_x,
       static_cast<int16_t>((rx_buf[5] << 8) | rx_buf[4]) * gyro_sensitivity_;
 
   acc_x = static_cast<int16_t>((rx_buf[7] << 8) | rx_buf[6]) * acc_sensitivity_;
-  acc_y = static_cast<int16_t>((rx_buf[9] << 8) | rx_buf[8]) * acc_sensitivity_;
+  acc_y =
+      static_cast<int16_t>((rx_buf[9] << 8) | rx_buf[8]) * acc_sensitivity_;
   acc_z =
       static_cast<int16_t>((rx_buf[11] << 8) | rx_buf[10]) * acc_sensitivity_;
+  return true;
 }
 
 bool LSM6DSV::ReadAccAndGyro(float& gyro_x, float& gyro_y, float& gyro_z,
                              float& acc_x, float& acc_y, float& acc_z) {
-  uint8_t data[12];
-  bool status = ReadRegisters(Register::OUTX_L_G, data, 12);
-  if (!status) { return status; }
+  uint8_t tx_buf[13];
+  uint8_t rx_buf[13];
+  CreateReadAccAndGyroTx(tx_buf);
+
+  if (enable_cs) { enable_cs(); }
+  spi_transmit_and_receive(tx_buf, rx_buf, 13);
+  if (disable_cs) { disable_cs(); }
+
   // Combine the low and high bytes for gyro and accelerometer data
-  DecodeReadAccAndGyroRx(data, gyro_x, gyro_y, gyro_z, acc_x, acc_y, acc_z);
+  DecodeReadAccAndGyroRx(rx_buf + 1, gyro_x, gyro_y, gyro_z, acc_x, acc_y, acc_z);
 
   return true;
 }
@@ -331,7 +336,7 @@ bool LSM6DSV::ResetMemory() {
   ReadRegister(Register::CTRL3, &ctrl3);
 
   // Set the BOOT bit
-  ctrl3 |= 0b1000000;
+  ctrl3 |= 0b10000000;
 
   // Write back to the CTRL3 register
   return WriteRegister(Register::CTRL3, &ctrl3);
